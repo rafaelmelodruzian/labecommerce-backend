@@ -1,0 +1,17 @@
+{
+  "name": "projeto-labecommerce-backend",
+  "version": "1.0.0",
+  "description": "O projeto \"labecommerce-backend\" tem como objetivos o desenvolvimento de uma API e todos os endpoints necessários para um funcionamento adequado de um ecommerce. Esse é um projeto de estudo com objetivo de praticar matérias da base de backend como por exemplo: NodeJS - Typescript - Express - SQL e SQLite - Knex - Postman.",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node ./build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "typescript": "^5.1.6"
+  }
+}
