@@ -1,0 +1,48 @@
+# Arquivos de compilação
+*.o
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Arquivos gerados por IDEs e editores de texto
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# Dependências e pacotes gerados
+node_modules/
+bower_components/
+vendor/
+
+# Arquivos de log e cache
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.tmp
+
+# Arquivos de configuração sensíveis
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Arquivos de banco de dados
+*.db
