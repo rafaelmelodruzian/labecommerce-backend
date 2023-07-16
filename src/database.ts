@@ -37,14 +37,13 @@ export const createProduct = (
     price: price,
     description: description,
     imageUrl: "Colocar a url da imagem depois",
-    createdAt: new Date().toISOString(),
   };
   products.push(newProduct);
   console.log("Produto cadastrado");
 };
 export const searchProductsByName = (name: string): Tproduct | undefined => {
-    return products.find(product => product.name.includes(name));
-  };
+  return products.find((product) => product.name.includes(name));
+};
 
 // Arrays usuarios e produtos
 export const users: Tuser[] = [

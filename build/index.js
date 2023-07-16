@@ -12,8 +12,8 @@ app.use((0, cors_1.default)());
 app.listen(3003, () => {
     console.log("Servidor rodando na porta 3003");
 });
-app.get("/ping", (req, res) => {
-    res.status(201).send("Pong!!");
+app.get("/marco", (req, res) => {
+    res.status(201).send("polo");
 });
 app.get("/users", (req, res) => {
     res.status(202).send(database_1.users);
@@ -21,37 +21,78 @@ app.get("/users", (req, res) => {
 // app.get("/products", (req: Request, res: Response) => {
 //   res.status(203).send(products);
 // });
-// app.get("/products", (req: Request, res: Response) => {
-//   const productToFind = req.query.name as string;
-//   if (productToFind) {
-//     const result: Tproduct[] = products.filter((product) =>
-//       product.name.toLowerCase().includes(productToFind.toLowerCase())
-//     );
-//     res.status(204).send(result);
-//   } else {
-//     res.status(205).send(products);
-//   }
-// });
 app.get("/products", (req, res) => {
     const productToFind = req.query.name;
     if (productToFind) {
-        const result = (0, database_1.searchProductsByName)(productToFind);
-        if (result) {
-            res.status(200).send(result);
-        }
-        else {
-            res.status(204).send();
-        }
+        const result = database_1.products.filter((product) => product.name.toLowerCase().includes(productToFind.toLowerCase()));
+        res.status(204).send(result);
     }
     else {
-        res.status(200).send(database_1.products);
+        res.send(database_1.products);
     }
 });
-// console.log(users);
-// console.log(products);
-// console.log(getAllUsers());
-// createUser("abc", "rafa", "rafa@email.com", "rafa123" ));
-// console.log(getAllProducts())
-// createProduct("prod003", "SSD gamer", 349.99, "Acelere seu sistema com velocidades incríveis de leitura e gravação.")
-// searchProductsByName("gamer")
-// console.log(searchProductsByName("gamer"))
+app.post("/users", (req, res) => {
+    const id = req.body.id;
+    const name = req.body.name;
+    const email = req.body.age;
+    const password = req.body.size;
+    const createdAt = new Date().toISOString();
+    const newUser = {
+        id,
+        name,
+        email,
+        password,
+        createdAt,
+    };
+    database_1.users.push(newUser);
+    res.status(201).send("Usuario cadastrado com sucesso");
+});
+app.post("/products", (req, res) => {
+    const id = req.body.id;
+    const name = req.body.name;
+    const price = req.body.price;
+    const description = req.body.description;
+    const imageUrl = req.body.imageUrl;
+    const newProduct = {
+        id,
+        name,
+        price,
+        description,
+        imageUrl,
+    };
+    database_1.products.push(newProduct);
+    res.status(202).send("Produto cadastrado com sucesso");
+});
+app.delete("/users/:id", (req, res) => {
+    const userIdToDelete = req.params.id;
+    const userIndex = database_1.users.findIndex((user) => user.id === userIdToDelete);
+    if (userIndex >= 0) {
+        database_1.users.splice(userIndex, 1);
+    }
+    res.status(200).send("Usuario deletado com sucesso");
+});
+app.delete("/products/:id", (req, res) => {
+    const productIdToDelete = req.params.id;
+    const productIndex = database_1.products.findIndex((product) => product.id === productIdToDelete);
+    if (productIndex >= 0) {
+        database_1.products.splice(productIndex, 1);
+    }
+    res.status(200).send("Produto deletado com sucesso");
+});
+app.put('/products/:id', (req, res) => {
+    const productIdToEdit = req.params.id;
+    const newId = req.body.id;
+    const newName = req.body.name;
+    const newPrice = req.body.price;
+    const newDescription = req.body.description;
+    const newImageUrl = req.body.imageUrl;
+    const product = database_1.products.find((product) => product.id === productIdToEdit);
+    if (product) {
+        product.id = newId || product.id;
+        product.name = newName || product.name;
+        product.price = newPrice || product.price;
+        product.description = newDescription || product.description;
+        product.imageUrl = newImageUrl || product.imageUrl;
+    }
+    res.status(200).send("Produto atualizado com sucesso");
+});
