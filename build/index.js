@@ -18,20 +18,35 @@ app.get("/ping", (req, res) => {
 app.get("/users", (req, res) => {
     res.status(202).send(database_1.users);
 });
-app.get("/products", (req, res) => {
-    res.status(203).send(database_1.products);
-});
+// app.get("/products", (req: Request, res: Response) => {
+//   res.status(203).send(products);
+// });
 // app.get("/products", (req: Request, res: Response) => {
 //   const productToFind = req.query.name as string;
 //   if (productToFind) {
 //     const result: Tproduct[] = products.filter((product) =>
 //       product.name.toLowerCase().includes(productToFind.toLowerCase())
 //     );
-//     res.status(204).send("AA");
+//     res.status(204).send(result);
 //   } else {
-//     res.status(205).send("BB");
+//     res.status(205).send(products);
 //   }
 // });
+app.get("/products", (req, res) => {
+    const productToFind = req.query.name;
+    if (productToFind) {
+        const result = (0, database_1.searchProductsByName)(productToFind);
+        if (result) {
+            res.status(200).send(result);
+        }
+        else {
+            res.status(204).send();
+        }
+    }
+    else {
+        res.status(200).send(database_1.products);
+    }
+});
 // console.log(users);
 // console.log(products);
 // console.log(getAllUsers());
