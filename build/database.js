@@ -37,7 +37,7 @@ const createProduct = (id, name, price, description) => {
 };
 exports.createProduct = createProduct;
 const searchProductsByName = (name) => {
-    console.log(exports.products.find((product) => product.name.includes(name)));
+    return exports.products.find(product => product.name.includes(name));
 };
 exports.searchProductsByName = searchProductsByName;
 // Arrays usuarios e produtos
@@ -67,7 +67,7 @@ exports.products = [
     },
     {
         id: "p002",
-        name: "Monitor",
+        name: "Teclado Wireless",
         price: 900,
         description: "Monitor LED full 24 polegadas",
         imageUrl: "https://picsum.photos/seed/Monitor/400",
