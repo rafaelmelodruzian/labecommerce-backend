@@ -30,14 +30,13 @@ const createProduct = (id, name, price, description) => {
         price: price,
         description: description,
         imageUrl: "Colocar a url da imagem depois",
-        createdAt: new Date().toISOString(),
     };
     exports.products.push(newProduct);
     console.log("Produto cadastrado");
 };
 exports.createProduct = createProduct;
 const searchProductsByName = (name) => {
-    return exports.products.find(product => product.name.includes(name));
+    return exports.products.find((product) => product.name.includes(name));
 };
 exports.searchProductsByName = searchProductsByName;
 // Arrays usuarios e produtos
