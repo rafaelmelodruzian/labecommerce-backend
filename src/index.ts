@@ -28,9 +28,9 @@ app.get("/users", (req: Request, res: Response) => {
   res.status(202).send(users);
 });
 
-app.get("/products", (req: Request, res: Response) => {
-  res.status(203).send(products);
-});
+// app.get("/products", (req: Request, res: Response) => {
+//   res.status(203).send(products);
+// });
 
 // app.get("/products", (req: Request, res: Response) => {
 //   const productToFind = req.query.name as string;
@@ -39,11 +39,30 @@ app.get("/products", (req: Request, res: Response) => {
 //     const result: Tproduct[] = products.filter((product) =>
 //       product.name.toLowerCase().includes(productToFind.toLowerCase())
 //     );
-//     res.status(204).send("AA");
+//     res.status(204).send(result);
 //   } else {
-//     res.status(205).send("BB");
+//     res.status(205).send(products);
 //   }
 // });
+
+
+app.get("/products", (req: Request, res: Response) => {
+  const productToFind = req.query.name as string;
+
+  if (productToFind) {
+    const result = searchProductsByName(productToFind);
+    if (result) {
+      res.status(200).send(result);
+    } else {
+      res.status(204).send();
+    }
+  } else {
+    res.status(200).send(products);
+  }
+});
+
+
+
 
 // console.log(users);
 // console.log(products);
