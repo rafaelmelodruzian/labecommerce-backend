@@ -74,7 +74,7 @@ export const products: Tproduct[] = [
   },
   {
     id: "p002",
-    name: "Monitor",
+    name: "Teclado Wireless",
     price: 900,
     description: "Monitor LED full 24 polegadas",
     imageUrl: "https://picsum.photos/seed/Monitor/400",
