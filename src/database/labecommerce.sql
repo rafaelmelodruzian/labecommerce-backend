@@ -229,9 +229,77 @@ SET
     image_url = 'link-imagem/novo'
 WHERE id = 'ID AQUI';
 
+-- Exercicios Relações SQL I
 
+-- 1) Criando Tabela purchases
 
+CREATE TABLE
+    purchases (
+        id TEXT PRIMARY KEY UNIQUE NOT NULL,
+        buyer TEXT NOT NULL,
+        total_price REAL NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (buyer) REFERENCES users(id)
+    );
 
+-- 2.A) Criando pedidos (purchases) para alguns usuarios
 
+INSERT INTO
+    purchases (
+        id,
+        buyer,
+        total_price,
+        created_at
+    )
+VALUES (
+        'pur001',
+        'u010',
+        1000,
+        '2023-07-14 20:20:20'
+    ), (
+        'pur002',
+        'u008',
+        500,
+        '2023-07-15 20:20:30'
+    ), (
+        'pur003',
+        'u007',
+        750,
+        '2023-07-16 20:20:40'
+    ), (
+        'pur004',
+        'u004',
+        200,
+        '2023-07-17 20:20:50'
+    ), (
+        'pur005',
+        'u003',
+        860,
+        '2023-07-18 20:20:10'
+    );
 
+-- 2.B) Alterando um total_price para praticar
 
+UPDATE purchases SET total_price = 920 WHERE id = 'pur001';
+
+-- 3) "Personalisando" exibição de uma tabela com SELECT e JOIN
+
+-- SELECT
+--     purchases.id,
+--     users.id,
+--     users.name,
+--     users.email,
+--     purchases.total_price,
+--     purchases.created_at,
+-- FROM purchases
+--     INNER JOIN users ON purchases.buyer = users.id;
+
+SELECT 
+  purchases.id  as purchase_ID,
+    users.id as user_ID, 
+    users.name,
+    users.email,
+    purchases.total_price,
+    purchases.created_at
+ FROM purchases
+INNER JOIN users ON purchases.buyer = users.id;
