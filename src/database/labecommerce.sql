@@ -1,5 +1,6 @@
-Active: 1689543265674@@127.0.0.1@3306
+-- Active: 1689543265674@@127.0.0.1@3306
 
+Active: 1689543265674 @ @ 127.0.0.1 @ 3306
 CREATE TABLE
     users (
         id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -94,7 +95,7 @@ VALUES (
         'ciclano@email.com',
         "ciclano123",
         "2023-07-10-18:25:50"
-    )
+    );
 
 INSERT INTO
     products (
@@ -158,4 +159,79 @@ VALUES (
         300.00,
         "Fonte custo beneficio excelente",
         "www.imagem.com/fonte"
+    );
+
+-- Exercicios Aprofundamento em SQL
+
+-- 1.A) Get All Users
+
+SELECT * FROM users;
+
+-- 1.B) Get All Products
+
+SELECT * FROM products;
+
+-- 1.C) Get Products Busca
+
+SELECT * FROM products WHERE name LIKE '%a%';
+
+-- 2.A) Create User
+
+INSERT INTO
+    users users (
+        id,
+        name,
+        email,
+        password,
+        created_at
     )
+VALUES (
+        'Novo',
+        'Usuario',
+        'email@usuario',
+        'usuario123',
+        '2023-07-10 18:30:50'
+    );
+
+-- 2.B) Create Product
+
+INSERT INTO
+    products (
+        id,
+        name,
+        price,
+        description,
+        image_url
+    )
+VALUES (
+        'Novo',
+        'Produto',
+        100,
+        'Produto novo',
+        'www.foto.com/novo'
+    );
+
+-- 3.A) Delete User by id
+
+DELETE FROM users WHERE id = 'ID AQUI';
+
+-- 3.B) Delete Product by id
+
+DELETE FROM products WHERE id = 'ID AQUI';
+
+-- 3.C) Edit Porduct by id
+
+UPDATE products
+SET
+    name = 'Novo nome do produto',
+    price = 99,
+    description = 'Nova descrição do produto',
+    image_url = 'link-imagem/novo'
+WHERE id = 'ID AQUI';
+
+
+
+
+
+
+
