@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.products = exports.users = exports.searchProductsByName = exports.createProduct = exports.getAllProducts = exports.createUser = exports.getAllUsers = void 0;
-// Funções Usuarios
 const getAllUsers = () => {
     return exports.users;
 };
@@ -29,7 +28,7 @@ const createProduct = (id, name, price, description) => {
         name: name,
         price: price,
         description: description,
-        imageUrl: "Colocar a url da imagem depois",
+        image_url: "Colocar a url da imagem depois",
     };
     exports.products.push(newProduct);
     console.log("Produto cadastrado");
@@ -62,13 +61,20 @@ exports.products = [
         name: "Mouse gamer",
         price: 250,
         description: "Melhor mouse do mercado!",
-        imageUrl: "https://picsum.photos/seed/Mouse%20gamer/400",
+        image_url: "https://picsum.photos/seed/Mouse%20gamer/400",
     },
     {
         id: "p002",
         name: "Teclado Wireless",
         price: 900,
         description: "Monitor LED full 24 polegadas",
-        imageUrl: "https://picsum.photos/seed/Monitor/400",
+        image_url: "https://picsum.photos/seed/Monitor/400",
     },
+    {
+        id: "p003",
+        name: "Placa Mãe",
+        price: 900,
+        description: "Placa mãe",
+        image_url: "https://picsum.photos/seed/Monitor/400",
+    }
 ];
