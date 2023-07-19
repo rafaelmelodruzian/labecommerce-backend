@@ -11,5 +11,5 @@ export type Tproduct = {
   name: string;
   price: number;
   description: string;
-  imageUrl: string;
+  image_url: string;
 };
