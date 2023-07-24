@@ -12,9 +12,7 @@ app.listen(3003, () => {
 //BLOCO GETS
 app.get("/users", async (req: Request, res: Response) => {
   try {
-    const result = await db.raw(`
-    SELECT * FROM users;
-  `)
+    const result = await db("users")
     res.status(200).send(result)
   } catch (error: any) {
     console.error(error);
@@ -25,12 +23,12 @@ app.get("/products", async (req: Request, res: Response) => {
   const productToFind = req.query.name as string;
   try {
     if (!productToFind) {
-      const allProducts = await db.raw(`SELECT * FROM products`);
+      const allProducts = await db("products");
       res.status(200).send(allProducts);
     } else {
-      const result = await db.raw(`
-        SELECT * FROM products WHERE name LIKE '%${productToFind}%';
-      `);
+      const result = await db("products")
+        .select()
+        .where("name", "like", `${productToFind}`)
       res.status(200).send(result);
     }
   } catch (error: any) {
@@ -41,20 +39,27 @@ app.get("/products", async (req: Request, res: Response) => {
 app.get("/purchases/:id?", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    let purchasesQuery = `
-      SELECT purchases.id, users.name AS buyer, products.id AS product_id,
-        products.name AS product_name, purchases_products.quantity,
-        products.price * purchases_products.quantity AS total
-      FROM purchases
-      JOIN users ON purchases.buyer = users.id
-      JOIN purchases_products ON purchases.id = purchases_products.purchase_id
-      JOIN products ON products.id = purchases_products.product_id
-    `;
+    let purchasesQuery = db
+      .select(
+        'purchases.id',
+        { buyer: 'users.name' },
+        { product_id: 'products.id' },
+        { product_name: 'products.name' },
+        { quantity: 'purchases_products.quantity' }
+      )
+      .sum({ total: db.raw('products.price * purchases_products.quantity') })
+      .from('purchases')
+      .innerJoin('users', 'purchases.buyer', 'users.id')
+      .innerJoin('purchases_products', 'purchases.id', 'purchases_products.purchase_id')
+      .innerJoin('products', 'products.id', 'purchases_products.product_id')
+      .groupBy('purchases.id', 'users.name', 'products.id', 'products.name', 'purchases_products.quantity')
 
     if (id) {
-      purchasesQuery += ` WHERE purchases.id = '${id}'`;
+      purchasesQuery.where('purchases.id', id);
     }
-    const result = await db.raw(purchasesQuery);
+
+    const result = await purchasesQuery;
+
     if (result.length === 0) {
       return res.status(404).send("Nenhum registro encontrado.");
     }
@@ -79,10 +84,79 @@ app.get("/purchases/:id?", async (req: Request, res: Response) => {
     });
     const response = Object.values(purchases);
     res.status(200).send(response);
-
   } catch (error: any) {
     console.error(error);
     res.status(500).send(error.message);
+  }
+});
+
+// BLOCO DELETES
+app.delete("/users/:id", async (req: Request, res: Response) => {
+  try {
+    const userIdToDelete = req.params.id;
+    const userToDelete = await db
+      .select('name')
+      .from('users')
+      .where('id', userIdToDelete)
+      .first();
+    if (userToDelete) {
+      await db
+        .del()
+        .from('users')
+        .where('id', userIdToDelete);
+
+      res.status(200).send("Usuário deletado com sucesso.");
+    } else {
+      res.status(404).send("Usuário não encontrado.");
+    }
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send("Erro ao deletar usuário");
+  }
+});
+app.delete("/products/:id", async (req: Request, res: Response) => {
+  try {
+    const productIdToDelete = req.params.id;
+    const productToDelete = await db
+      .select('name')
+      .from('products')
+      .where('id', productIdToDelete)
+      .first();
+    if (productToDelete) {
+      await db
+        .del()
+        .from('products')
+        .where('id', productIdToDelete);
+
+      res.status(200).send("Produto deletado com sucesso.");
+    } else {
+      res.status(404).send("Produto não encontrado.");
+    }
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send("Erro ao deletar produto");
+  }
+});
+app.delete("/purchases/:id", async (req: Request, res: Response) => {
+  try {
+    const purchaseIdToDelete = req.params.id;
+    const purchaseToDelete = await db
+      .select('*')
+      .from('purchases')
+      .where('id', purchaseIdToDelete)
+      .first();
+    if (purchaseToDelete) {
+      await db
+        .from('purchases')
+        .where('id', purchaseIdToDelete)
+        .del();
+      res.status(200).send("Compra deletada com sucesso");
+    } else {
+      res.status(404).send("Compra não encontrada");
+    }
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send("Erro ao deletar compra");
   }
 });
 
@@ -112,10 +186,14 @@ app.post("/users", async (req: Request, res: Response) => {
       throw new Error("Já existe uma conta com esse e-mail");
     }
 
-    const queryUsers = `
-    INSERT INTO users (id, name, email, password, created_at)
-    VALUES ('${id}', '${name}', '${email}', '${password}', '${new Date().toISOString()}')  `;
-    await db.raw(queryUsers);
+    const newUser = {
+      id: id,
+      name: name,
+      email: email,
+      password: password,
+      created_at: `${new Date().toISOString()}`
+    }
+    await db("users").insert(newUser)
     res.status(201).send("Usuário cadastrado com sucesso");
 
   } catch (error: any) {
@@ -143,17 +221,20 @@ app.post("/products", async (req: Request, res: Response) => {
       console.log(typeof image_url)
       throw new Error("'image_url' deve ser uma string");
     }
-
     const productIdVerify = await db("products").where("id", id).first();
     if (productIdVerify) {
       throw new Error("Já existe um produto com esse ID")
+    };
+
+    const newProduct = {
+      id: id,
+      name: name,
+      price: price,
+      description: description,
+      image_url: image_url
     }
 
-    const queryProducts = `
-    INSERT INTO products (id, name, price, description, image_url)
-    VALUES ('${id}', '${name}', '${price}', '${description}', '${image_url}')
-  `;
-    await db.raw(queryProducts);
+    await db("products").insert(newProduct)
     res.status(201).send("Produto cadastrado com sucesso");
 
   } catch (error: any) {
@@ -163,6 +244,10 @@ app.post("/products", async (req: Request, res: Response) => {
 });
 app.post("/purchases", async (req: Request, res: Response) => {
   try {
+    interface Product {
+      id: number;
+      quantity: number;
+    }
     const { id, buyer, products } = req.body;
 
     let totalPrice = 0;
@@ -171,10 +256,10 @@ app.post("/purchases", async (req: Request, res: Response) => {
       const productId = product.id;
       const productQuantity = product.quantity;
 
-      const productPriceQuery = `
-        SELECT price FROM products WHERE id = '${productId}';
-      `;
-      const result = await db.raw(productPriceQuery);
+      const result = await db
+        .select('price')
+        .from('products')
+        .where('id', productId)
 
       if (result[0]?.length > 0) {
         const productPrice = Number(result[0][0].price);
@@ -182,91 +267,25 @@ app.post("/purchases", async (req: Request, res: Response) => {
       }
     }
 
-    const purchaseInsert = `
-      INSERT INTO purchases (id, buyer, total_price, created_at) 
-      VALUES ('${id}', '${buyer}', ${totalPrice}, '${new Date().toISOString()}');
-    `;
-    await db.raw(purchaseInsert);
+    await db('purchases').insert({
+      id,
+      buyer,
+      total_price: totalPrice,
+      created_at: new Date().toISOString()
+    });
 
-    for (const product of products) {
-      const { id: productId, quantity: productQuantity } = product;
-      const pur_proInsert = `
-        INSERT INTO purchases_products (purchase_id, product_id, quantity) 
-        VALUES ('${id}', '${productId}', ${productQuantity});
-      `;
-      await db.raw(pur_proInsert);
-    }
+    const purchaseProducts: Product[] = products.map((product: Product) => ({
+      purchase_id: id,
+      product_id: product.id,
+      quantity: product.quantity
+    }));
+
+    await db('purchases_products').insert(purchaseProducts);
 
     res.status(201).send("Pedido realizado com sucesso");
   } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
-  }
-});
-
-// BLOCO DELETES
-app.delete("/users/:id", async (req: Request, res: Response) => {
-  const userIdToDelete = req.params.id;
-  try {
-    const resultUsers = await db.raw(`
-      SELECT name FROM users WHERE id = '${userIdToDelete}';
-    `);
-
-    if (resultUsers.length > 0) {
-      await db.raw(`
-        DELETE FROM users WHERE id = '${userIdToDelete}';
-      `);
-      res.status(200).send("Usuário deletado com sucesso.");
-    } else {
-      res.status(404).send("Usuario não encontrado.");
-    }
-
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).send("Erro ao deletar usuário");
-  }
-});
-app.delete("/products/:id", async (req: Request, res: Response) => {
-  const productIdToDelete = req.params.id;
-  try {
-    const resultProducts = await db.raw(`
-      SELECT name FROM products WHERE id = '${productIdToDelete}';
-    `);
-
-    if (resultProducts.length > 0) {
-      await db.raw(`
-        DELETE FROM products WHERE id = '${productIdToDelete}';
-      `);
-      res.status(200).send("Produto deletado com sucesso");
-    } else {
-      res.status(404).send("Produto não encontrado.");
-    }
-
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).send("Erro ao deletar produto");
-  }
-});
-
-app.delete("/purchases/:id", async (req: Request, res: Response) => {
-  const purchaseIdToDelete = req.params.id;
-  try {
-    const resultpurchases = await db.raw(`
-      SELECT * FROM purchases WHERE id = '${purchaseIdToDelete}';
-    `);
-    console.log(resultpurchases)
-    if (resultpurchases.length > 0) {
-      await db.raw(`
-        DELETE FROM purchases WHERE id = '${purchaseIdToDelete}';
-      `);
-      res.status(200).send("Compra deletado com sucesso");
-    } else {
-      res.status(404).send("Compra não encontrado");
-    }
-
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).send("Erro ao deletar compra");
   }
 });
 
@@ -296,4 +315,28 @@ app.put("/products/:id", async (req: Request, res: Response) => {
     res.status(500).send(error.message);
   }
 });
+app.put("/users/:id", async (req: Request, res: Response) => {
+  const userIdToEdit = req.params.id;
+  const { id, name, email, password } = req.body
+  try {
+    const user = await db("users").where("id", userIdToEdit).first();
+    if (!user) {
+      res.status(404).send("Usuario não encontrado");
+      return;
+    }
+    const updatedUser = {
+      id: id || user.id,
+      name: name || user.name,
+      email: email || user.email,
+      password: password || user.description,
+      created_at: new Date().toISOString()
+    };
 
+    await db("users").where("id", userIdToEdit).update(updatedUser);
+    res.status(200).send("Cadastro do usuario atualizado com sucesso");
+
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+})
