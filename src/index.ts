@@ -28,7 +28,7 @@ app.get("/products", async (req: Request, res: Response) => {
     } else {
       const result = await db("products")
         .select()
-        .where("name", "like", `${productToFind}`)
+        .where("name", "like", `%${productToFind}%`)
       res.status(200).send(result);
     }
   } catch (error: any) {
@@ -45,7 +45,7 @@ app.get("/purchases/:id?", async (req: Request, res: Response) => {
         { buyer: 'users.name' },
         { product_id: 'products.id' },
         { product_name: 'products.name' },
-        { quantity: 'purchases_products.quantity' }
+        { total_price: 'purchases_products.quantity' }
       )
       .sum({ total: db.raw('products.price * purchases_products.quantity') })
       .from('purchases')
@@ -72,7 +72,7 @@ app.get("/purchases/:id?", async (req: Request, res: Response) => {
           id,
           buyer,
           products: [],
-          total: 0
+          total_price: 0
         };
       }
       purchases[id].products.push({
@@ -80,7 +80,7 @@ app.get("/purchases/:id?", async (req: Request, res: Response) => {
         name: product_name,
         quantity
       });
-      purchases[id].total += total;
+      purchases[id].total_price += total;
     });
     const response = Object.values(purchases);
     res.status(200).send(response);
